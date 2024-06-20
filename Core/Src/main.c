@@ -33,6 +33,8 @@
 /* USER CODE BEGIN PD */
 #define ADC_TIMEOUT 1
 #define UART_TIMEOUT 1
+#define MSG_TRANSMITED_SIZE 4
+#define MSG_REICEIV_SIZE 13
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,7 +49,8 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 uint16_t AdcValue = 0;
-char StringToTransmited[16];
+char StringToTransmited[MSG_TRANSMITED_SIZE];
+char pDataReceived[MSG_REICEIV_SIZE];
 uint8_t ButtonFlag = 0;
 /* USER CODE END PV */
 
@@ -103,16 +106,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
 	  if( 1 == ButtonFlag)
 	  {
+		  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, SET);
 		  HAL_ADC_Start(&hadc1);
 		  HAL_ADC_PollForConversion(&hadc1, ADC_TIMEOUT);
 		  HAL_ADC_Stop(&hadc1);
 		  AdcValue = HAL_ADC_GetValue(&hadc1);
 		  sprintf(StringToTransmited, "%d", AdcValue);
-		  HAL_UART_Transmit(&huart1, (uint8_t *) StringToTransmited, 2, UART_TIMEOUT);
+		  if (HAL_UART_Transmit(&huart1, (uint8_t *) StringToTransmited, MSG_TRANSMITED_SIZE, UART_TIMEOUT) !=HAL_OK)
+		  {
+			  Error_Handler();
+		  }
 		  ButtonFlag = 0;
 	  }
+	 /* if(HAL_UART_Receive(&huart1, (uint8_t *) pDataReceived, MSG_REICEIV_SIZE, UART_TIMEOUT) !=HAL_OK)
+	  {
+		  Error_Handler();
+	  }*/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -293,7 +305,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
- ++ButtonFlag;
+	ButtonFlag = 1;
 }
 /* USER CODE END 4 */
 

@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +31,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ADC_TIMEOUT 1
+#define UART_TIMEOUT 1
+#define MSG_TRANSMITED_SIZE 4
+#define MSG_REICEIV_SIZE 13
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,7 +49,9 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 uint16_t AdcValue = 0;
-uint8_t StringToTransmited[16];
+char StringToTransmited[MSG_TRANSMITED_SIZE];
+char pDataReceived[MSG_REICEIV_SIZE];
+uint8_t ButtonFlag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,6 +59,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,6 +99,9 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_USART1_UART_Init();
+
+  /* Initialize interrupts */
+  MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -101,15 +110,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin))
+	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
+	  if( 1 == ButtonFlag)
 	  {
+		  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, SET);
 		  HAL_ADC_Start(&hadc1);
-		  HAL_ADC_PollForConversion(&hadc1, Timeout);
+		  HAL_ADC_PollForConversion(&hadc1, ADC_TIMEOUT);
 		  HAL_ADC_Stop(&hadc1);
 		  AdcValue = HAL_ADC_GetValue(&hadc1);
-		  tostring(StringToTransmited, AdcValue);
-		  HAL_UART_Transmit(huart1, *StringToTransmited, 2, Timeout)
+		  sprintf(StringToTransmited, "%d", AdcValue);
+		  if (HAL_UART_Transmit(&huart1, (uint8_t *) StringToTransmited, MSG_TRANSMITED_SIZE, UART_TIMEOUT) !=HAL_OK)
+		  {
+			  Error_Handler();
+		  }
+		  ButtonFlag = 0;
 	  }
+	 /* if(HAL_UART_Receive(&huart1, (uint8_t *) pDataReceived, MSG_REICEIV_SIZE, UART_TIMEOUT) !=HAL_OK)
+	  {
+		  Error_Handler();
+	  }*/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -160,6 +179,17 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief NVIC Configuration.
+  * @retval None
+  */
+static void MX_NVIC_Init(void)
+{
+  /* EXTI0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
 /**
@@ -284,7 +314,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	ButtonFlag = 1;
+}
 /* USER CODE END 4 */
 
 /**
