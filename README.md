@@ -1,4 +1,4 @@
-# STM32F407 to Arduino UART Communication Projects
+# ADC to Arduino Communication Projects
 
 This repository contains three projects that demonstrate communication between an STM32F407 Discovery board and an Arduino using UART protocol. Each project utilizes different UART communication modes to transfer ADC conversion results from the STM32 to the Arduino.
 
