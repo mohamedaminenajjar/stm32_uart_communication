@@ -115,16 +115,16 @@ int main(void)
 		  HAL_ADC_Stop(&hadc1);
 		  AdcValue = HAL_ADC_GetValue(&hadc1);
 		  sprintf(StringToTransmited, "%d", AdcValue);
-		  if (HAL_UART_Transmit(&huart1, (uint8_t *) StringToTransmited, MSG_TRANSMITED_SIZE, UART_TIMEOUT) !=HAL_OK)
+		  if (HAL_UART_Transmit(&huart1, (uint8_t *)StringToTransmited, MSG_TRANSMITED_SIZE, UART_TIMEOUT) !=HAL_OK)
 		  {
 			  Error_Handler();
 		  }
 		  ButtonFlag = 0;
 	  }
-	 /* if(HAL_UART_Receive(&huart1, (uint8_t *) pDataReceived, MSG_REICEIV_SIZE, UART_TIMEOUT) !=HAL_OK)
+	  if(HAL_UART_Receive(&huart1, (uint8_t *) pDataReceived, MSG_REICEIV_SIZE, UART_TIMEOUT) !=HAL_OK)
 	  {
 		  Error_Handler();
-	  }*/
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,7 +169,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV8;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
